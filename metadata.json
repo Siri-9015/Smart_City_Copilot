@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Smart City AI",
+  "description": "Smart city intelligence platform combining AI Traffic Intelligence, Pollution Forecasting, and Environmental Monitoring with a Gemini Copilot.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Default-deny global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helper primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming(req) {
+      return req.resource.data;
+    }
+
+    // Validate a user profile object
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'createdAt'])
+        && data.keys().size() == 4
+        && data.uid is string
+        && data.email is string
+        && data.role in ['admin', 'analyst', 'viewer']
+        && data.createdAt is string;
+    }
+
+    // Validate an alert object
+    function isValidAlert(data) {
+      return data.keys().hasAll(['id', 'type', 'severity', 'message', 'timestamp'])
+        && data.id is string
+        && data.type in ['pollution', 'congestion', 'accident']
+        && data.severity in ['Low', 'Medium', 'High', 'Critical']
+        && data.message is string
+        && data.timestamp is string;
+    }
+
+    // 2. User Collection Matches
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow list: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      allow create: if isSignedIn() 
+        && request.auth.uid == userId 
+        && isValidUser(request.resource.data)
+        // Prevent spoofing role during initial registration
+        && request.resource.data.role == 'viewer';
+        
+      allow update: if isSignedIn() 
+        && request.auth.uid == userId 
+        && isValidUser(request.resource.data)
+        // Prevent users from self-promoting to analyst or admin
+        && request.resource.data.role == resource.data.role;
+        
+      allow delete: if false; // Users cannot be deleted from SDK client
+    }
+
+    // 3. Alerts Collection Matches
+    match /alerts/{alertId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        && isValidAlert(request.resource.data);
+      allow update, delete: if false; // Alerts are append-only/immutable logs
+    }
+  }
+}

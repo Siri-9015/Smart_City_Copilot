@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profile",
+      "description": "User profile containing roles and alert preferences.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "admin",
+            "analyst",
+            "viewer"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "role"
+      ]
+    },
+    "alerts": {
+      "title": "Telemetry Alert",
+      "description": "Incident, traffic, or pollution threshold breaches.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "pollution",
+            "congestion",
+            "accident"
+          ]
+        },
+        "severity": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "districtId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "severity",
+        "message",
+        "timestamp"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User authentication states and preferences"
+    },
+    "/alerts/{alertId}": {
+      "schema": "alerts",
+      "description": "Triggered city-wide alerts history"
+    }
+  }
+}
