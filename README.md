@@ -221,15 +221,6 @@ Emergency incident response triggered
 - Environmental Monitoring
 - Emergency Response Systems
 
----
-
-# Author
-
-Likhitha Siri Meghana Killani  
-B.Tech CSE — Smart City AI Project
-
----
-
 # License
 
 MIT License
